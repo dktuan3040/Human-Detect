@@ -29,9 +29,12 @@ def to_grayscale(frame):
 # CẤU HÌNH
 # ==============================
 
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
-MOTION_THRESHOLD = 50
+camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+camera.set(cv2.CAP_PROP_EXPOSURE, -5)
+
+MOTION_THRESHOLD = 20
 is_static = False
 MOTION_RATIO = 2
 
@@ -54,12 +57,13 @@ previous_frame = None
 while True:
     current_time = time.time()
     ret, frame = camera.read()
-
+    
     if not ret:
         print("Khong doc duoc Camera")
         break
 
     grayscale_frame = to_grayscale(frame)
+    
     blurred = gaussian_blur(grayscale_frame)
 
     if previous_frame is None:
@@ -86,7 +90,9 @@ while True:
             if start_bg_time is None:
                 start_bg_time = time.time()
             elif time.time() - start_bg_time >= STATIC_WAIT_TIME:
+ 
                 background_float = blurred.astype(np.float32)
+                background_raw = grayscale_frame.astype(np.float32)
                 background_blurred = blurred.copy()
                 background_ready = True
                 start_bg_time = None
@@ -94,6 +100,7 @@ while True:
 
     if background_ready:
         foreground_mask = detect_motion(background_blurred, blurred, MOTION_THRESHOLD)
+        nofilter = detect_motion(background_raw,grayscale_frame,MOTION_THRESHOLD)
         foreground_opened = opening(foreground_mask)
         bg_ratio = calculate_motion_ratio(foreground_opened)
         print("Bacground ratio : ", bg_ratio)
@@ -133,7 +140,7 @@ while True:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         cv2.imshow("Foreground", foreground_opened)
-
+        cv2.imshow("koloc",nofilter)
     cv2.imshow("Camera", frame)
 
     print("Is static:", is_static)
