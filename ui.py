@@ -35,11 +35,11 @@ def to_grayscale(frame):
 # CẤU HÌNH 
 # ==============================
 
-MOTION_THRESHOLD = 40
-MOTION_RATIO = 5
-STATIC_WAIT_TIME = 5
+MOTION_THRESHOLD = 40 #độ lớn chấp nhận thay đổi
+MOTION_RATIO = 5  #ti le pixel coi la co chuyen dong
+STATIC_WAIT_TIME = 5 
 MIN_AREA = 2000
-LIGHT_RATIO = 70
+LIGHT_RATIO = 70 #ti le sang nen
 LIGHT_WAIT_TIME = 30
 
 
@@ -169,7 +169,9 @@ class FindHumanUI:
         if self.running:
             return
 
-        self.camera = cv2.VideoCapture(0)
+        self.camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.camera.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+        self.camera.set(cv2.CAP_PROP_EXPOSURE, -5)
         if not self.camera.isOpened():
             self.camera.release()
             self.camera = None
